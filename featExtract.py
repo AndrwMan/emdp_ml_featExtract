@@ -31,6 +31,14 @@ def compute_mfcc(audio_data, sample_rate, n_mfcc=13):
     mfccs = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=n_mfcc)
     return mfccs
 
+def normalize_mfcc(mfccs):
+    # Apply Z-score normalization across rows (axis=1)
+    mean = np.mean(mfccs, axis=1, keepdims=True)
+    std = np.std(mfccs, axis=1, keepdims=True)
+    normalized_mfccs = (mfccs - mean) / std
+
+    return normalized_mfccs
+
 def main():
     # Path to the ZIP file containing audio files
     zip_file_path = './data/cleaned.zip'
@@ -53,6 +61,10 @@ def main():
 	# Directory to store computed MFCCs
     mfcc_directory = './data/extracted/mfcc/'
     os.makedirs(mfcc_directory, exist_ok=True)
+    
+	 # Directory to store computed normalized MFCCs
+    normalized_mfcc_directory = './data/extracted/normalized_mfcc/'
+    os.makedirs(normalized_mfcc_directory, exist_ok=True)
 
     # Trim and write audio files
     for audio_file in audio_files:
@@ -67,10 +79,15 @@ def main():
         
 		# Compute MFCCs for the trimmed audio
         mfccs = compute_mfcc(trimmed_audio_data, sample_rate)
-
         # Write the computed MFCCs to the new directory
         mfcc_file_path = os.path.join(mfcc_directory, audio_file.replace('.wav', '_mfcc.npy'))
         np.save(mfcc_file_path, mfccs)
+
+		# Normalize the computed MFCCs
+        normalized_mfccs = normalize_mfcc(mfccs)
+		 # Write the computed normalized MFCCs to the new directory
+        normalized_mfcc_file_path = os.path.join(normalized_mfcc_directory, audio_file.replace('.wav', '_normalized_mfcc.npy'))
+        np.save(normalized_mfcc_file_path, normalized_mfccs)
 
 if __name__ == "__main__":
     main()
