@@ -2,6 +2,7 @@ import zipfile
 import os
 import librosa
 import soundfile as sf  # Use soundfile for writing audio files
+import numpy as np
 
 def unzip_audio_files(zip_path, extract_path):
     # Ensure the extraction directory exists
@@ -24,6 +25,11 @@ def trim_silence(audio_data):
 def write_audio_file(file_path, audio_data, sample_rate):
     # Write the audio data to a new file
     sf.write(file_path, audio_data, sample_rate)
+    
+def compute_mfcc(audio_data, sample_rate, n_mfcc=13):
+    # Compute MFCCs for the entire audio file
+    mfccs = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=n_mfcc)
+    return mfccs
 
 def main():
     # Path to the ZIP file containing audio files
@@ -39,19 +45,14 @@ def main():
 	# List all extracted audio files from the 'cleaned' subdirectory
     audio_files = [f for f in os.listdir(os.path.join(extract_directory, 'cleaned')) if f.endswith('.wav')]
     print(audio_files)
-
-	# # Read and trim silence for the first audio file
-    # if audio_files:
-    #     print("entered")
-    #     first_audio_file_path = os.path.join(extract_directory, 'cleaned', audio_files[0])
-    #     audio_data, sample_rate = read_audio_file(first_audio_file_path)
-
-    #     # Trim silence
-    #     trimmed_audio_data = trim_silence(audio_data)
     
 	# Directory to store trimmed audio files
     trimmed_directory = './data/extracted/trimmed/'
     os.makedirs(trimmed_directory, exist_ok=True)
+    
+	# Directory to store computed MFCCs
+    mfcc_directory = './data/extracted/mfcc/'
+    os.makedirs(mfcc_directory, exist_ok=True)
 
     # Trim and write audio files
     for audio_file in audio_files:
@@ -60,8 +61,16 @@ def main():
         trimmed_audio_data = trim_silence(audio_data)
 
         # Write the trimmed audio to the new directory
-        trimmed_file_path = os.path.join(trimmed_directory, audio_file)
+        #trimmed_file_path = os.path.join(trimmed_directory, audio_file)
+        trimmed_file_path = os.path.join(trimmed_directory, audio_file.replace('.wav', '_enhanced.wav'))
         write_audio_file(trimmed_file_path, trimmed_audio_data, sample_rate)
+        
+		# Compute MFCCs for the trimmed audio
+        mfccs = compute_mfcc(trimmed_audio_data, sample_rate)
+
+        # Write the computed MFCCs to the new directory
+        mfcc_file_path = os.path.join(mfcc_directory, audio_file.replace('.wav', '_mfcc.npy'))
+        np.save(mfcc_file_path, mfccs)
 
 if __name__ == "__main__":
     main()
