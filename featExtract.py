@@ -66,6 +66,9 @@ def main():
     normalized_mfcc_directory = './data/extracted/normalized_mfcc/'
     os.makedirs(normalized_mfcc_directory, exist_ok=True)
 
+	# Initialize an empty list to store mean MFCC vectors
+    mean_mfcc_vectors = []
+
     # Trim and write audio files
     for audio_file in audio_files:
         audio_file_path = os.path.join(extract_directory, 'cleaned', audio_file)
@@ -85,9 +88,32 @@ def main():
 
 		# Normalize the computed MFCCs
         normalized_mfccs = normalize_mfcc(mfccs)
+        
+        # print(f"Normalized MFCCs for {audio_file}:")
+        # print(f"Dim of Mean MFCC: {normalized_mfccs.shape}")
+        # print(normalized_mfccs)
 		 # Write the computed normalized MFCCs to the new directory
         normalized_mfcc_file_path = os.path.join(normalized_mfcc_directory, audio_file.replace('.wav', '_normalized_mfcc.npy'))
         np.save(normalized_mfcc_file_path, normalized_mfccs)
+        
+        transposed_mfccs = normalized_mfccs.T
+        
+        mean_mfcc = np.mean(transposed_mfccs, axis=0)
+        print(f"Mean MFCC for {audio_file}:")
+        print(f"Dim of Mean MFCC: {mean_mfcc.shape}")
+        print(mean_mfcc)
+        
+        # Append the mean_mfcc vector to the list
+        mean_mfcc_vectors.append(mean_mfcc)
+
+	# Stack the mean MFCC vectors to create a data matrix
+    data_matrix = np.vstack(mean_mfcc_vectors)
+    print("Data Matrix:")
+    print(data_matrix)
+    print(f"Dimensions of Data Matrix: {data_matrix.shape}")
+    
+	
+
 
 if __name__ == "__main__":
     main()
