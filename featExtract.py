@@ -3,6 +3,7 @@ import os
 import librosa
 import soundfile as sf  # Use soundfile for writing audio files
 import numpy as np
+from sklearn.decomposition import PCA
 
 def unzip_audio_files(zip_path, extract_path):
     # Ensure the extraction directory exists
@@ -99,9 +100,9 @@ def main():
         transposed_mfccs = normalized_mfccs.T
         
         mean_mfcc = np.mean(transposed_mfccs, axis=0)
-        print(f"Mean MFCC for {audio_file}:")
-        print(f"Dim of Mean MFCC: {mean_mfcc.shape}")
-        print(mean_mfcc)
+        # print(f"Mean MFCC for {audio_file}:")
+        # print(f"Dim of Mean MFCC: {mean_mfcc.shape}")
+        # print(mean_mfcc)
         
         # Append the mean_mfcc vector to the list
         mean_mfcc_vectors.append(mean_mfcc)
@@ -112,8 +113,18 @@ def main():
     print(data_matrix)
     print(f"Dimensions of Data Matrix: {data_matrix.shape}")
     
-	
+	#Perform PCA on the data matrix
+    n_components = 5  # Choose the number of principal components
+    pca = PCA(n_components=n_components)
+    principal_components = pca.fit_transform(data_matrix)
 
+    # Print or use the principal components as needed
+    print(f"Principal Components (First {n_components} components):")
+    print(principal_components)
+
+    # Print the explained variance ratio
+    print(f"Explained Variance Ratio:")
+    print(pca.explained_variance_ratio_)
 
 if __name__ == "__main__":
     main()
